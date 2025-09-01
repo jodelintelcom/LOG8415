@@ -4,7 +4,7 @@ import requests
 import time
 from config import settings
 
-class DiscoveryService:
+class LoadBalancerService:
     def __init__(self):
         # Get the list of server URLs for both clusters from configuration
         self.cluster1_urls = settings.get_cluster1_urls()
@@ -13,7 +13,6 @@ class DiscoveryService:
         self.cluster1_times = {}
         # Dictionary to store response times for each server in cluster 2  
         self.cluster2_times = {}
-        # Flag to control whether the health checking loop should continue running
         self.running = False
     
     def _check_server(self, url):
@@ -22,12 +21,12 @@ class DiscoveryService:
             # Send GET request to /health endpoint with 5 second timeout
             response = requests.get(f"{url}/health", timeout=5)
             # Calculate response time in milliseconds
-            response_time = response.elapsed.total_second() * 1000
-            # Return response time if server is healthy (200 status), otherwise return infinity
-            return response_time if response.status_code == 200 else float('inf')
+            response_time = response.elapsed.total_seconds() * 1000
+            # Return response time if server is healthy (200 status), otherwise return None
+            return response_time if response.status_code == 200 else None
         except:
-            # If any error occurs returns infinity
-            return float('inf')
+            # If any error occurs returns None (unreachable server)
+            return None
     
     def _health_check(self):
         # Main loop that runs infinitly to check for response timn
@@ -56,15 +55,32 @@ class DiscoveryService:
         
         # Loop through each server and its response time
         for url, response_time in times.items():
-            # If this server's response time is faster than our current best
+            # Skip servers that are unreachable (None response time)
+            if response_time is None:
+                continue
+            # If this server's response time is faster than our current best we take it
             if response_time < fastest_time:
-                # Update our tracking variables with this faster server
                 fastest_time = response_time
                 fastest_url = url
         
         # Return the URL of the server with the fastest response time
         return fastest_url
     
+    def forward_request_to_cluster(self, cluster_name: str):
+        # Find the fastest server in the specified cluster
+        fastest_url = self.get_fastest(cluster_name)
+        
+        # If no server is available, return error
+        if not fastest_url:
+            return {"error": f"No servers available in {cluster_name}"}
+        
+        # Forward the request to the fastest server and return its response
+        try:
+            response = requests.get(fastest_url, timeout=5)
+            return response.text
+            
+        except Exception as e:
+            return {"error": f"Failed to reach server {fastest_url}: {str(e)}"}
     def start(self):
         # Set the running flag to True to start the health checking loop
         self.running = True
@@ -75,4 +91,4 @@ class DiscoveryService:
         return thread
 
 
-discovery = DiscoveryService()
+load_balancer = LoadBalancerService()
