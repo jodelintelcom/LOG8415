@@ -1,8 +1,3 @@
-variable "name" {
-  type        = string
-  description = "The name of the instance"
-}
-
 variable "instance_type" {
   type        = string
   description = "The type of the instance"

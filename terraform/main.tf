@@ -12,16 +12,18 @@ provider "aws" {
 }
 
 module "cluster1" {
-  source         = "./modules/cluster"
+  source         = "./modules/ec2"
   cluster_name   = "cluster1"
+  vpc_id         = module.network.vpc_id
   subnet_ids     = module.network.subnet_ids
   instance_count = 5
   instance_type  = "t2.micro"
 }
 
 module "cluster2" {
-  source         = "./modules/cluster"
+  source         = "./modules/ec2"
   cluster_name   = "cluster2"
+  vpc_id         = module.network.vpc_id
   subnet_ids     = module.network.subnet_ids
   instance_count = 4
   instance_type  = "t2.large"
