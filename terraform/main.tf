@@ -26,3 +26,9 @@ module "cluster2" {
   instance_count = 4
   instance_type  = "t2.large"
 }
+
+module "network" {
+  source             = "./modules/network"
+  vpc_cidr           = "10.0.0.0/16"
+  public_subnet_cidr = "172.16.0.0/16"
+}
