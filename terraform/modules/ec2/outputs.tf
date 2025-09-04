@@ -1,14 +1,14 @@
-output "ids" {
-  description = "List of IDs of instances created"
-  value       = aws_instance.this.*.id
+output "id" {
+  description = "ID of instance created"
+  value       = aws_instance.instance.id
 }
 
 output "public_ip" {
-  description = "List of public IP adresses related to our instances"
-  value       = aws_instance.this.*.public_ip
+  description = "Public IP address related to the instance"
+  value       = aws_instance.instance.public_ip
 }
 
 output "private_ip" {
-  description = "List of private IP adresses related to our instances"
-  value       = aws_instance.this.*.private_ip
+  description = "Private IP address related to the instance"
+  value       = aws_instance.instance.private_ip
 }

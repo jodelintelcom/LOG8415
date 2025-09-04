@@ -4,23 +4,13 @@ variable "instance_type" {
   default     = "t2.micro"
 }
 
-variable "subnet_ids" {
-  type        = list(string)
-  description = "The list of VPC subnet IDs"
-  default     = []
+variable "instance_name" {
+  type = string
+  description = "The name to tag the instances with"
 }
 
-variable "instance_count" {
-  type        = number
-  description = "Number of instances to create"
-}
-
-variable "vpc_id" {
-  description = "The ID of the VPC"
+variable "ami_id" {
+  description = "The AMI ID to use for the instances"
   type        = string
-}
-
-variable "cluster_name" {
-  type        = string
-  description = "The name of the cluster"
+  default     = "ami-0360c520857e3138f" # Ubuntu 24.04 LTS in us-east-1
 }
