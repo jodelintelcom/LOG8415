@@ -20,3 +20,8 @@ variable "ami_id" {
   description = "AMI to use for the instances"
   default     = "ami-0360c520857e3138f" # Ubuntu 24.04 LTS us-east-1
 }
+
+variable "key_name" {
+  description = "The name of the key pair to use for the instances"
+  type        = string
+}

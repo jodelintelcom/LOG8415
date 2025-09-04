@@ -1,4 +1,4 @@
 resource "aws_key_pair" "ssh_key" {
   key_name   = "ssh_key"
-  public_key = "[Public key here]"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCsP8lrHltMgXT+UuZ8IVgWnYpbID+eGPWafaZUFgjrw9qlWbmtn6eOy9jjfId0Mzrnqg2tETYldCCUn6pz5QvgyOIyVxGgRkDD3JuZU+AWn8ypXjeLcC48rvAaqDz/XvEQq7SV8nFMjdUQuSUa9f2IZ7McHhd5swUYbBkK6IUC+6v7xbPlxgLg6y6HY0J88Z7HPiLMZGbigTc07DMnY+hx7aHidZt/u/peLErW8QyelPdoyRs/uy4R71hOU4Rb99edBQ+9xDwu6hs5gQP17ZZDD00whZkm83h1YN9y7oWlPHOHOq4fGVZBCi5cvYxbf0qb76Po0ODyDPNq/zahuJX9T3XMr4CbFhQrXamdJEwT3VYCnE76CevHPiXBVviVcQ5NagR+iMPMCMKBDeVYedPO5UrXOCg/lK4smJameTJQJseVSuIJPJxwzYvzA/kAF8lwCh41KAVtypbNChplYHsIa5kgKN4mGRo5lKQiWnZ2sG6r4wykU4Og0Yls5kJr5d0= martinrn@martins-mbp.sofr.hefr.lan"
 }
