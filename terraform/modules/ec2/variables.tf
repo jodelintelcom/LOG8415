@@ -14,3 +14,8 @@ variable "ami_id" {
   type        = string
   default     = "ami-0360c520857e3138f" # Ubuntu 24.04 LTS in us-east-1
 }
+
+variable "key_name" {
+  description = "The name of the key pair to use for the instance"
+  type        = string
+}
