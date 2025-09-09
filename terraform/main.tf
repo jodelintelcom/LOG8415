@@ -22,6 +22,14 @@ module "cluster2" {
   key_name = "ssh_key"
 }
 
+module "custom_lb" {
+  source = "./modules/ec2"
+  instance_name = "custom-lb"
+  instance_type = "t2.micro"
+  ami_id        = "ami-0360c520857e3138f"
+  key_name = "ssh_key"
+}
+
 /*
 module "alb" {
   source   = "./modules/alb"
