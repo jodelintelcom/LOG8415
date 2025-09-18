@@ -1,11 +1,11 @@
 output "vpc_id" {
-  description = "The ID of our VPC"
-  value       = aws_vpc.main.id
+  value = aws_vpc.main.id
 }
 
-/*
-output "subnet_ids" {
-  description = "The list of IDs of our public subnets"
-  value       = aws_subnet.public[*].id
+output "subnet_id" {
+  value = aws_subnet.public.id
 }
-*/
+
+output "security_group_id" {
+  value = aws_security_group.ssh.id
+}
