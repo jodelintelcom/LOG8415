@@ -7,8 +7,8 @@ module "network" {
 module "cluster1" {
   source                 = "./modules/cluster"
   cluster_name           = "cluster1"
-  instances_count        = 2
-  instance_type          = "t2.micro"
+  instances_count        = 4
+  instance_type          = "t2.large"
   ami_id                 = "ami-0360c520857e3138f"
   key_name               = "lab1-8415"
   subnet_id              = module.network.subnet_id
@@ -18,7 +18,7 @@ module "cluster1" {
 module "cluster2" {
   source                 = "./modules/cluster"
   cluster_name           = "cluster2"
-  instances_count        = 2
+  instances_count        = 5
   instance_type          = "t2.micro"
   ami_id                 = "ami-0360c520857e3138f"
   key_name               = "lab1-8415"

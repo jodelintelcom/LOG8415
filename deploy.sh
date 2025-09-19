@@ -92,3 +92,11 @@ EOF
 deploy_cluster "$CLUSTER1_IPS" "cluster1"
 deploy_cluster "$CLUSTER2_IPS" "cluster2"
 deploy_lb
+
+LB_IP=$(terraform -chdir=terraform output -raw custom_lb_public_ip)
+echo "Load Balancer IP: $LB_IP"
+
+echo "Waiting for 20 seconds to run the benchmark"
+sleep 20
+
+python3 benchmark.py --url http://$LB_IP:8080
