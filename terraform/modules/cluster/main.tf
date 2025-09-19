@@ -13,19 +13,12 @@ module "instance" {
 set -e
 
 apt-get update -y
-apt-get install -y python3 python3-pip
-
-pip3 install uv
-
-ln -s /usr/local/bin/uv /usr/bin/uv || true
-
+apt-get install -y python3 python3-pip curl
+su - ubuntu -c "curl -LsSf https://astral.sh/uv/install.sh | sh"
+echo 'export PATH=$HOME/.local/bin:$PATH' >> /home/ubuntu/.bashrc
+echo 'export PATH=$HOME/.local/bin:$PATH' >> /home/ubuntu/.profile
 mkdir -p /home/ubuntu/app
-
-echo "cluster_name=${var.cluster_name}" > /home/ubuntu/app/.env
-echo "instance_id=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)" >> /home/ubuntu/app/.env
-
 chown -R ubuntu:ubuntu /home/ubuntu/app
 EOF
-
 
 }

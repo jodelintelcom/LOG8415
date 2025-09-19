@@ -6,6 +6,7 @@ terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
 terraform/ssh_key.tf
 
+terraform.tfstate
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

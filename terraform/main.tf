@@ -31,17 +31,7 @@ module "custom_lb" {
   instance_name          = "custom-lb"
   instance_type          = "t2.micro"
   ami_id                 = "ami-0360c520857e3138f"
-  user_data              = ""
   key_name               = "lab1-8415"
   subnet_id              = module.network.subnet_id
   vpc_security_group_ids = [module.network.security_group_id]
-
 }
-
-/*
-module "alb" {
-  source   = "./modules/alb"
-  alb_name = "alb"
-  vpc_id   = module.vpc.vpc_id
-}
-*/

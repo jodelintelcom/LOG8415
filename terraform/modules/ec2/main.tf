@@ -7,6 +7,7 @@ resource "aws_instance" "instance" {
   vpc_security_group_ids = var.vpc_security_group_ids
   lifecycle {
     create_before_destroy = true
+    ignore_changes        = [user_data]
   }
   tags = {
     Name = "${var.instance_name}"
