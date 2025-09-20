@@ -18,7 +18,7 @@ module "cluster1" {
 module "cluster2" {
   source                 = "./modules/cluster"
   cluster_name           = "cluster2"
-  instances_count        = 5
+  instances_count        = 4
   instance_type          = "t2.micro"
   ami_id                 = "ami-0360c520857e3138f"
   key_name               = "lab1-8415"

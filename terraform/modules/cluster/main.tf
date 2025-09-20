@@ -14,9 +14,6 @@ set -e
 
 apt-get update -y
 apt-get install -y python3 python3-pip curl
-su - ubuntu -c "curl -LsSf https://astral.sh/uv/install.sh | sh"
-echo 'export PATH=$HOME/.local/bin:$PATH' >> /home/ubuntu/.bashrc
-echo 'export PATH=$HOME/.local/bin:$PATH' >> /home/ubuntu/.profile
 mkdir -p /home/ubuntu/app
 chown -R ubuntu:ubuntu /home/ubuntu/app
 EOF

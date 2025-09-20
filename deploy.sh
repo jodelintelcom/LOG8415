@@ -26,12 +26,25 @@ wait_for_ssh() {
   echo "SSH is ready on $ip"
 }
 
+install_uv() {
+  local ip=$1
+  echo "Installing uv on $ip..."
+  ssh -i ~/.ssh/lab1-8415.pem ubuntu@$ip 'bash -s' <<'EOF'
+    set -e
+    if [ ! -f /home/ubuntu/.local/bin/uv ]; then
+      curl -LsSf https://astral.sh/uv/install.sh | sh
+    fi
+    echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc
+    echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.profile
+EOF
+}
 
 deploy_cluster() {
   local ips=$1
   local cname=$2
   for ip in $ips; do
     wait_for_ssh $ip
+    install_uv $ip
     echo "Deploying to $ip ($cname)"
     scp -i ~/.ssh/lab1-8415.pem -r web-server/* ubuntu@$ip:/home/ubuntu/app/
     ssh -i ~/.ssh/lab1-8415.pem ubuntu@$ip 'bash -s' <<EOF
@@ -54,6 +67,7 @@ deploy_lb() {
 
   wait_for_ssh $lb_ip
 
+
   echo "Deploying the load balancer to $lb_ip..."
 
   cat > lb.env <<EOF
@@ -65,7 +79,6 @@ EOF
     set -e
     sudo apt-get update -y
     sudo apt-get install -y python3 python3-pip curl
-    sudo -u ubuntu curl -LsSf https://astral.sh/uv/install.sh | sudo -u ubuntu sh
 
     echo 'export PATH=$HOME/.local/bin:$PATH' >> /home/ubuntu/.bashrc
     echo 'export PATH=$HOME/.local/bin:$PATH' >> /home/ubuntu/.profile
@@ -73,7 +86,7 @@ EOF
     mkdir -p /home/ubuntu/app
     chown -R ubuntu:ubuntu /home/ubuntu/app
 EOF
-
+  install_uv $lb_ip
   scp -i ~/.ssh/lab1-8415.pem -r custom-load-balancer/* ubuntu@$lb_ip:/home/ubuntu/app/
   scp -i ~/.ssh/lab1-8415.pem lb.env ubuntu@$lb_ip:/home/ubuntu/app/.env
   ssh -i ~/.ssh/lab1-8415.pem ubuntu@$lb_ip 'bash -s' <<'EOF'
@@ -99,4 +112,4 @@ echo "Load Balancer IP: $LB_IP"
 echo "Waiting for 20 seconds to run the benchmark"
 sleep 20
 
-python3 benchmark.py --url http://$LB_IP:8080
+LB_IP=http://$LB_IP:8080 python3 benchmark.py
