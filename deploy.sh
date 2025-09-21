@@ -92,6 +92,7 @@ EOF
   ssh -i ~/.ssh/lab1-8415.pem ubuntu@$lb_ip 'bash -s' <<'EOF'
     set -e
     cd /home/ubuntu/app
+    /home/ubuntu/.local/bin/uv add boto3 fastapi uvicorn requests
     export PATH="$HOME/.local/bin:$PATH"
     pkill -f "uvicorn" || true
     setsid /home/ubuntu/.local/bin/uv run uvicorn main:app --host 0.0.0.0 --port 8080 > lb.log 2>&1 &

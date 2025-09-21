@@ -5,8 +5,7 @@ import os
 
 
 async def call_endpoint_http(session, request_num):
-    #url = os.getenv("LB_IP", "http://localhost:8080")
-    url = "http://3.84.142.9:8080/cluster1"
+    url = os.getenv("LB_IP", "http://localhost:8080")
     headers = {'content-type': 'application/json'}
     try:
         async with session.get(url, headers=headers) as response :
