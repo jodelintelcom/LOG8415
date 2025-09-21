@@ -12,4 +12,8 @@ def read_root():
 # Endpoint to check if the server is healthy (LB will call it to check if we can redirect to this instance)
 @app.get("/health")
 def pong():
-    return "healthy"
+    return {
+        "status": "healthy",
+        "instance_id": get_instance_id(),
+        "cluster": get_cluster_name()
+    }

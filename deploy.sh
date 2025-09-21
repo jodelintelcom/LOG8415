@@ -47,6 +47,8 @@ deploy_cluster() {
     install_uv $ip
     echo "Deploying to $ip ($cname)"
     scp -i ~/.ssh/lab1-8415.pem -r web-server/* ubuntu@$ip:/home/ubuntu/app/
+    ssh -i ~/.ssh/lab1-8415.pem ubuntu@$ip "mkdir -p /home/ubuntu/.aws"
+    scp -i ~/.ssh/lab1-8415.pem ~/.aws/credentials ubuntu@$ip:/home/ubuntu/.aws/credentials
     ssh -i ~/.ssh/lab1-8415.pem ubuntu@$ip 'bash -s' <<EOF
       set -e
       cd /home/ubuntu/app
@@ -67,12 +69,11 @@ deploy_lb() {
 
   wait_for_ssh $lb_ip
 
-
   echo "Deploying the load balancer to $lb_ip..."
 
   cat > lb.env <<EOF
-cluster1_urls=$(for ip in $CLUSTER1_IPS; do echo -n "http://$ip:8000,"; done | sed 's/,$//')
-cluster2_urls=$(for ip in $CLUSTER2_IPS; do echo -n "http://$ip:8000,"; done | sed 's/,$//')
+  cluster1_urls=$(for ip in $CLUSTER1_IPS; do echo -n "http://$ip:8000,"; done | sed 's/,$//')
+  cluster2_urls=$(for ip in $CLUSTER2_IPS; do echo -n "http://$ip:8000,"; done | sed 's/,$//')
 EOF
 
   ssh -i ~/.ssh/lab1-8415.pem ubuntu@$lb_ip 'bash -s' <<'EOF'
@@ -89,6 +90,11 @@ EOF
   install_uv $lb_ip
   scp -i ~/.ssh/lab1-8415.pem -r custom-load-balancer/* ubuntu@$lb_ip:/home/ubuntu/app/
   scp -i ~/.ssh/lab1-8415.pem lb.env ubuntu@$lb_ip:/home/ubuntu/app/.env
+  ssh -i ~/.ssh/lab1-8415.pem ubuntu@$lb_ip "mkdir -p /home/ubuntu/.aws"
+  scp -i ~/.ssh/lab1-8415.pem ~/.aws/credentials ubuntu@$lb_ip:/home/ubuntu/.aws/credentials
+  ssh -i ~/.ssh/lab1-8415.pem ubuntu@$lb_ip "chmod 600 /home/ubuntu/.aws/credentials"
+
+
   ssh -i ~/.ssh/lab1-8415.pem ubuntu@$lb_ip 'bash -s' <<'EOF'
     set -e
     cd /home/ubuntu/app

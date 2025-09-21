@@ -18,11 +18,11 @@ async def call_endpoint_http(session, request_num, cluster):
         # Make async HTTP GET request to cluster endpoint
         async with session.get(url, headers=headers) as response :
             status_code = response.status
-            response_text = await response.text()
+            response_json = await response.json()
 
         # Parse JSON response 
-        response_json = json.loads(json.loads(response_text))
-        cluster_id = response_json["instance_id"]
+        
+        cluster_id = response_json.get("instance_id", "unknown")
 
         # Print request results with instance ID
         print(f"Request {request_num}  | Status Code : {status_code}| cluster : {cluster}: | Instance ID : {cluster_id}")

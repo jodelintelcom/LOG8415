@@ -27,7 +27,9 @@ class LoadBalancerService:
             if response.status_code == 200:
                 # Return response time if server is healthy (200 status) and
                 # send metrics to CloudWatch, otherwise return None
-                self.send_metrics_to_cloudwatch(cluster_name, url, response_time)
+                data = response.json()
+                instance_id = data.get("instance_id", url)
+                self.send_metrics_to_cloudwatch(cluster_name, instance_id, response_time)
                 return response_time
             else:
                 return None
@@ -107,7 +109,7 @@ class LoadBalancerService:
         # Forward the request to the fastest server and return its response
         try:
             response = requests.get(fastest_url, timeout=5)
-            return response.text
+            return response.json()
 
         except Exception as e:
             return {"error": f"Failed to reach server {fastest_url}: {str(e)}"}
