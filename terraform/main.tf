@@ -1,4 +1,5 @@
-
+# Main Terraform configuration file
+# Instantiates modules for network, two clusters, and a custom load balancer (EC2 instance)
 
 module "network" {
   source = "./modules/network"

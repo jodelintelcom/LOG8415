@@ -1,4 +1,4 @@
-
+# Relies on ec2 module to create instances for a cluster
 module "instance" {
   count                  = var.instances_count
   source                 = "../ec2"

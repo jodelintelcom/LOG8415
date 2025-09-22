@@ -1,3 +1,4 @@
+# Module to create a VPC with public subnet, internet gateway, route table and security group
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true

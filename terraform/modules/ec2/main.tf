@@ -1,3 +1,4 @@
+# Module to create an EC2 instance
 resource "aws_instance" "instance" {
   ami                    = var.ami_id
   instance_type          = var.instance_type
