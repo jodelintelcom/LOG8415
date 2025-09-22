@@ -39,6 +39,9 @@ async def call_endpoint_http(session, request_num, cluster):
 # Main function to benchmark both clusters
 async def main():
 
+    with open("benchmark-results.txt", "w") as f:
+        f.write("\n=== NEW BENCHMARK RUN ===\n")
+
     # Number of concurrent requests to send to each cluster
     num_requests = 1000
 

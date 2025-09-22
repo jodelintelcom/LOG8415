@@ -1,7 +1,20 @@
 #!/bin/bash
 set -e
 
-echo "Deplying infrastructure"
+# Create SSH key if not exists
+echo "Creating SSH key"
+rm -f ~/.ssh/lab1-8415.pem ~/.ssh/lab1-8415.pem.pub ~/.ssh/lab1-8415
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/lab1-8415.pem -N ""
+mv ~/.ssh/lab1-8415.pem.pub ~/.ssh/lab1-8415
+PUB_CONTENT=$(cat ~/.ssh/lab1-8415)
+cat > terraform/ssh_key.tf <<EOF
+resource "aws_key_pair" "lab1-8415" {
+  key_name   = "lab1-8415"
+  public_key = "${PUB_CONTENT}"
+}
+EOF
+
+echo "Deploying infrastructure"
 terraform -chdir=terraform init
 terraform -chdir=terraform apply -auto-approve
 
@@ -9,7 +22,7 @@ echo "Getting clusters IPS"
 CLUSTER1_IPS=$(terraform -chdir=terraform output -json cluster1_public_ips | jq -r '.[]')
 CLUSTER2_IPS=$(terraform -chdir=terraform output -json cluster2_public_ips | jq -r '.[]')
 
-
+# Function to wait for SSH to be ready
 wait_for_ssh() {
   local ip=$1
   local max_wait=180
@@ -26,6 +39,7 @@ wait_for_ssh() {
   echo "SSH is ready on $ip"
 }
 
+# Function to install uv if not already installed
 install_uv() {
   local ip=$1
   echo "Installing uv on $ip..."
@@ -39,6 +53,7 @@ install_uv() {
 EOF
 }
 
+# Function to deploy FastAPI to cluster
 deploy_cluster() {
   local ips=$1
   local cname=$2
@@ -64,6 +79,7 @@ EOF
   done
 }
 
+# Function to deploy custom load balancer
 deploy_lb() {
   local lb_ip=$(terraform -chdir=terraform output -raw custom_lb_public_ip)
 
@@ -108,7 +124,7 @@ EOF
   echo "Load balancer deployed to $lb_ip"
 }
 
-
+# Deploy clusters and load balancer
 deploy_cluster "$CLUSTER1_IPS" "cluster1"
 deploy_cluster "$CLUSTER2_IPS" "cluster2"
 deploy_lb
@@ -116,13 +132,15 @@ deploy_lb
 LB_IP=$(terraform -chdir=terraform output -raw custom_lb_public_ip)
 echo "Load Balancer IP: $LB_IP"
 
+# Run benchmark
 echo "Waiting for 20 seconds to run the benchmark"
 sleep 20
-
 uv sync
 LB_IP=http://$LB_IP:8080 uv run python benchmark.py
 
+# Cleanup resources
 echo "End of benchmark, deleting resources in 5 seconds"
 sleep 5
 terraform -chdir=terraform destroy -auto-approve
-echo "All done!"
+rm -f lb.env ~/.ssh/lab1-8415.pem ~/.ssh/lab1-8415.pem.pub ~/.ssh/lab1-8415
+echo "All done! Results can be viewed in benchmark-results.txt file."
