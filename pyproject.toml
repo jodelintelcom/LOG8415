@@ -1,0 +1,11 @@
+[project]
+name = "log8415-benchmark"
+version = "0.1.0"
+description = "lab01 benchmark python project"
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+  "aiohttp>=3.9,<4.0",
+]
+

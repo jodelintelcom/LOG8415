@@ -25,7 +25,10 @@ async def call_endpoint_http(session, request_num, cluster):
         cluster_id = response_json.get("instance_id", "unknown")
 
         # Print request results with instance ID
-        print(f"Request {request_num}  | Status Code : {status_code}| cluster : {cluster}: | Instance ID : {cluster_id}")
+        result = (f"Request {request_num}  | Status Code : {status_code}| cluster : {cluster}: | Instance ID : {cluster_id}")
+        print(result)
+        with open("benchmark-results.txt", "a") as f:
+            f.write(result + "\n")
         return status_code , response_json
 
     except Exception as e :
@@ -65,11 +68,18 @@ async def main():
     average_time1 = total_time1 / num_requests
     average_time2 = total_time2 / num_requests
 
-    print ("\n=== BENCHMARK RESULTS ===")
-    print (f"Total time taken cluster1: {total_time1 :.6f} seconds")
-    print (f"Total time taken cluster2: {total_time2 :.6f} seconds")
-    print (f"Average time per request cluster1: {average_time1 :.6f} seconds")
-    print (f"Average time per request cluster2: {average_time2 :.6f} seconds")
+    results = (
+        "\n=== BENCHMARK RESULTS ===\n"
+        f"Total time taken cluster1: {total_time1:.6f} seconds\n"
+        f"Total time taken cluster2: {total_time2:.6f} seconds\n"
+        f"Average time per request cluster1: {average_time1:.6f} seconds\n"
+        f"Average time per request cluster2: {average_time2:.6f} seconds\n"
+    )
+
+    print(results)
+
+    with open("benchmark-results.txt", "a") as f:
+        f.write(results)
 
 if __name__ == "__main__":
     asyncio.run(main())

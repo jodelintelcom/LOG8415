@@ -119,4 +119,10 @@ echo "Load Balancer IP: $LB_IP"
 echo "Waiting for 20 seconds to run the benchmark"
 sleep 20
 
-LB_IP=http://$LB_IP:8080 python3 benchmark.py
+uv sync
+LB_IP=http://$LB_IP:8080 uv run python benchmark.py
+
+echo "End of benchmark, deleting resources in 5 seconds"
+sleep 5
+terraform -chdir=terraform destroy -auto-approve
+echo "All done!"
