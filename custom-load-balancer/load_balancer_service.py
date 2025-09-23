@@ -3,7 +3,9 @@ import threading
 import requests
 import time
 from config import settings
+import boto3
 
+cloudwatch = boto3.client('cloudwatch', region_name='us-east-1')
 class LoadBalancerService:
     def __init__(self):
         # Get the list of server URLs for both clusters from configuration
@@ -11,37 +13,44 @@ class LoadBalancerService:
         self.cluster2_urls = settings.get_cluster2_urls()
         # Dictionary to store response times for each server in cluster 1
         self.cluster1_times = {}
-        # Dictionary to store response times for each server in cluster 2  
+        # Dictionary to store response times for each server in cluster 2
         self.cluster2_times = {}
         self.running = False
     
-    def _check_server(self, url):
+    def _check_server(self, url, cluster_name):
         # Try to ping the server's health endpoint
         try:
             # Send GET request to /health endpoint with 5 second timeout
             response = requests.get(f"{url}/health", timeout=5)
             # Calculate response time in milliseconds
             response_time = response.elapsed.total_seconds() * 1000
-            # Return response time if server is healthy (200 status), otherwise return None
-            return response_time if response.status_code == 200 else None
+            if response.status_code == 200:
+                # Return response time if server is healthy (200 status) and
+                # send metrics to CloudWatch, otherwise return None
+                data = response.json()
+                instance_id = data.get("instance_id", url)
+                self.send_metrics_to_cloudwatch(cluster_name, instance_id, response_time)
+                return response_time
+            else:
+                return None
         except:
             # If any error occurs returns None (unreachable server)
             return None
-    
+
     def _health_check(self):
         # Main loop that runs infinitly to check for response timn
         while self.running:
             # Check health and response time for each server in cluster 1
             for url in self.cluster1_urls:
-                self.cluster1_times[url] = self._check_server(url)
-            
+                self.cluster1_times[url] = self._check_server(url, "cluster1")
+
             # Check health and response time for each server in cluster 2
             for url in self.cluster2_urls:
-                self.cluster2_times[url] = self._check_server(url)
-            
+                self.cluster2_times[url] = self._check_server(url, "cluster2")
+
             # Wait 1 second each time
             time.sleep(1)
-    
+
     def get_fastest(self, cluster):
         # Select the appropriate response times dictionary based on cluster name
         times = self.cluster1_times if cluster == 'cluster1' else self.cluster2_times
@@ -52,7 +61,7 @@ class LoadBalancerService:
         # Initialize variables to track the fastest server
         fastest_url = None
         fastest_time = float('inf')  # Start with infinity so any real time will be smaller
-        
+
         # Loop through each server and its response time
         for url, response_time in times.items():
             # Skip servers that are unreachable (None response time)
@@ -62,23 +71,46 @@ class LoadBalancerService:
             if response_time < fastest_time:
                 fastest_time = response_time
                 fastest_url = url
-        
+
         # Return the URL of the server with the fastest response time
         return fastest_url
-    
+
+    def send_metrics_to_cloudwatch(self, cluster_name, instance_id, latency):
+        cloudwatch.put_metric_data(
+            Namespace='CustomLoadBalancerLab1',
+            MetricData=[
+                {
+                    'MetricName': 'Latency',
+                    'Dimensions': [
+                        {
+                            'Name': 'Cluster',
+                            'Value': cluster_name
+                        },
+                        {
+                            'Name': 'Instance',
+                            'Value': instance_id
+                        }
+                    ],
+                    'Value': latency,
+                    'Unit': 'Milliseconds'
+                }
+            ]
+        )
+
+
     def forward_request_to_cluster(self, cluster_name: str):
         # Find the fastest server in the specified cluster
         fastest_url = self.get_fastest(cluster_name)
-        
+
         # If no server is available, return error
         if not fastest_url:
             return {"error": f"No servers available in {cluster_name}"}
-        
+
         # Forward the request to the fastest server and return its response
         try:
             response = requests.get(fastest_url, timeout=5)
-            return response.text
-            
+            return response.json()
+
         except Exception as e:
             return {"error": f"Failed to reach server {fastest_url}: {str(e)}"}
     def start(self):

@@ -1,39 +1,38 @@
-module "vpc" {
-  source     = "./modules/network"
-  vpc_cidr   = "10.0.0.0/16"
-  public_subnet_cidr = ["0.0.0.0/0"]
+# Main Terraform configuration file
+# Instantiates modules for network, two clusters, and a custom load balancer (EC2 instance)
+
+module "network" {
+  source = "./modules/network"
 }
 
 module "cluster1" {
-  source          = "./modules/cluster"
-  cluster_name    = "cluster1"
-  instances_count = 2
-  instance_type   = "t2.micro"
-  ami_id          = "ami-0360c520857e3138f"
-  key_name = "ssh_key"
+  source                 = "./modules/cluster"
+  cluster_name           = "cluster1"
+  instances_count        = 4
+  instance_type          = "t2.large"
+  ami_id                 = "ami-0360c520857e3138f"
+  key_name               = "lab1-8415"
+  subnet_id              = module.network.subnet_id
+  vpc_security_group_ids = [module.network.security_group_id]
 }
 
 module "cluster2" {
-  source          = "./modules/cluster"
-  cluster_name    = "cluster2"
-  instances_count = 2
-  instance_type   = "t2.micro"
-  ami_id          = "ami-0360c520857e3138f"
-  key_name = "ssh_key"
+  source                 = "./modules/cluster"
+  cluster_name           = "cluster2"
+  instances_count        = 4
+  instance_type          = "t2.micro"
+  ami_id                 = "ami-0360c520857e3138f"
+  key_name               = "lab1-8415"
+  subnet_id              = module.network.subnet_id
+  vpc_security_group_ids = [module.network.security_group_id]
 }
 
 module "custom_lb" {
-  source = "./modules/ec2"
-  instance_name = "custom-lb"
-  instance_type = "t2.micro"
-  ami_id        = "ami-0360c520857e3138f"
-  key_name = "ssh_key"
+  source                 = "./modules/ec2"
+  instance_name          = "custom-lb"
+  instance_type          = "t2.micro"
+  ami_id                 = "ami-0360c520857e3138f"
+  key_name               = "lab1-8415"
+  subnet_id              = module.network.subnet_id
+  vpc_security_group_ids = [module.network.security_group_id]
 }
-
-/*
-module "alb" {
-  source   = "./modules/alb"
-  alb_name = "alb"
-  vpc_id   = module.vpc.vpc_id
-}
-*/

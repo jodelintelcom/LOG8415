@@ -6,6 +6,7 @@ terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
 terraform/ssh_key.tf
 
+terraform.tfstate
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -14,6 +15,7 @@ __pycache__/
 # Environments
 .env
 .venv
+lb.env
 
 # Distribution / packaging
 .Python
@@ -32,6 +34,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+uv.lock
 
 
 # Unit test / coverage reports
@@ -52,3 +55,6 @@ coverage.xml
 *.swp
 *.swo
 **/.DS_Store
+
+# Others
+benchmark-results.txt
