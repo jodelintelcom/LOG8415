@@ -28,7 +28,7 @@ wait_for_ssh() {
   local max_wait=180
   local waited=0
   echo "Waiting for SSH to be ready on $ip..."
-  until ssh -o StrictHostKeyChecking=no -i ~/.ssh/lab1-8415.pem ubuntu@$ip "echo ok" 2>/dev/null; do
+  until ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/lab1-8415.pem ubuntu@$ip "echo ok" 2>/dev/null; do
     sleep 5
     waited=$((waited+5))
     if [ $waited -ge $max_wait ]; then
@@ -43,7 +43,7 @@ wait_for_ssh() {
 install_uv() {
   local ip=$1
   echo "Installing uv on $ip..."
-  ssh -i ~/.ssh/lab1-8415.pem ubuntu@$ip 'bash -s' <<'EOF'
+  ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/lab1-8415.pem ubuntu@$ip 'bash -s' <<'EOF'
     set -e
     if [ ! -f /home/ubuntu/.local/bin/uv ]; then
       curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -61,10 +61,10 @@ deploy_cluster() {
     wait_for_ssh $ip
     install_uv $ip
     echo "Deploying to $ip ($cname)"
-    scp -i ~/.ssh/lab1-8415.pem -r web-server/* ubuntu@$ip:/home/ubuntu/app/
-    ssh -i ~/.ssh/lab1-8415.pem ubuntu@$ip "mkdir -p /home/ubuntu/.aws"
-    scp -i ~/.ssh/lab1-8415.pem ~/.aws/credentials ubuntu@$ip:/home/ubuntu/.aws/credentials
-    ssh -i ~/.ssh/lab1-8415.pem ubuntu@$ip 'bash -s' <<EOF
+    scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/lab1-8415.pem -r web-server/* ubuntu@$ip:/home/ubuntu/app/
+    ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/lab1-8415.pem ubuntu@$ip "mkdir -p /home/ubuntu/.aws"
+    scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/lab1-8415.pem ~/.aws/credentials ubuntu@$ip:/home/ubuntu/.aws/credentials
+    ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/lab1-8415.pem ubuntu@$ip 'bash -s' <<EOF
       set -e
       cd /home/ubuntu/app
       echo "cluster_name=$cname" > /home/ubuntu/app/.env
@@ -92,7 +92,7 @@ deploy_lb() {
   cluster2_urls=$(for ip in $CLUSTER2_IPS; do echo -n "http://$ip:8000,"; done | sed 's/,$//')
 EOF
 
-  ssh -i ~/.ssh/lab1-8415.pem ubuntu@$lb_ip 'bash -s' <<'EOF'
+  ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/lab1-8415.pem ubuntu@$lb_ip 'bash -s' <<'EOF'
     set -e
     sudo apt-get update -y
     sudo apt-get install -y python3 python3-pip curl
@@ -104,14 +104,14 @@ EOF
     chown -R ubuntu:ubuntu /home/ubuntu/app
 EOF
   install_uv $lb_ip
-  scp -i ~/.ssh/lab1-8415.pem -r custom-load-balancer/* ubuntu@$lb_ip:/home/ubuntu/app/
-  scp -i ~/.ssh/lab1-8415.pem lb.env ubuntu@$lb_ip:/home/ubuntu/app/.env
-  ssh -i ~/.ssh/lab1-8415.pem ubuntu@$lb_ip "mkdir -p /home/ubuntu/.aws"
-  scp -i ~/.ssh/lab1-8415.pem ~/.aws/credentials ubuntu@$lb_ip:/home/ubuntu/.aws/credentials
-  ssh -i ~/.ssh/lab1-8415.pem ubuntu@$lb_ip "chmod 600 /home/ubuntu/.aws/credentials"
+  scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/lab1-8415.pem -r custom-load-balancer/* ubuntu@$lb_ip:/home/ubuntu/app/
+  scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/lab1-8415.pem lb.env ubuntu@$lb_ip:/home/ubuntu/app/.env
+  ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/lab1-8415.pem ubuntu@$lb_ip "mkdir -p /home/ubuntu/.aws"
+  scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/lab1-8415.pem ~/.aws/credentials ubuntu@$lb_ip:/home/ubuntu/.aws/credentials
+  ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/lab1-8415.pem ubuntu@$lb_ip "chmod 600 /home/ubuntu/.aws/credentials"
 
 
-  ssh -i ~/.ssh/lab1-8415.pem ubuntu@$lb_ip 'bash -s' <<'EOF'
+  ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/lab1-8415.pem ubuntu@$lb_ip 'bash -s' <<'EOF'
     set -e
     cd /home/ubuntu/app
     /home/ubuntu/.local/bin/uv add boto3 fastapi uvicorn requests
