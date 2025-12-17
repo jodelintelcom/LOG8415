@@ -1,0 +1,42 @@
+from fastapi import FastAPI, HTTPException, Header
+import requests
+import re
+import os
+app = FastAPI()
+
+API_KEY = "log8415e"
+
+PROXY_ENDPOINT = os.getenv(
+    "PROXY_ENDPOINT",
+    "http://10.0.0.20:8001/query"
+)
+
+BLOCKED_SQL_PATTERNS = ["drop table", "truncate", "shutdown", "delete from", "alter table"]
+
+def check_query(sql: str):
+    return not any(cmd in sql.lower() for cmd in BLOCKED_SQL_PATTERNS)
+
+@app.post("/query")
+def secure_query(payload: dict, x_api_key: str = Header(None)):
+
+    if x_api_key != API_KEY:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    sql = payload.get("sql")
+    strategy = payload.get("strategy", "direct")
+
+    if not sql:
+        raise HTTPException(status_code=400, detail="Provide a SQL query...")
+
+    if not check_query(sql):
+        raise HTTPException(status_code=400, detail="The query is blocked by the gatekeeper...")
+
+    try:
+        response = requests.post(PROXY_ENDPOINT, json={
+            "sql": sql,
+            "strategy": strategy
+        })
+        return response.json()
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
