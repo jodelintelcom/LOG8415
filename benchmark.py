@@ -9,7 +9,7 @@ GATEKEEPER = os.getenv(
 
 HEADERS = {"X-API-Key": "log8415e"}
 
-REQUESTS_PER_TEST = 200
+REQUESTS_PER_TEST = 1000
 BENCHMARK_TABLE = "cluster_benchmark"
 
 def send_query(sql, strategy="direct"):
@@ -19,7 +19,6 @@ def send_query(sql, strategy="direct"):
             GATEKEEPER,
             json=payload,
             headers=HEADERS,
-            timeout=1
         )
         return r.json()
     except Exception as e:
@@ -52,11 +51,19 @@ def clean_table():
 
 
 def benchmark_strategy(strategy):
+    print(f"\n strategy running now is: {strategy.upper()}")
+
     start = time.time()
     for i in range(REQUESTS_PER_TEST):
         if i % 50 == 0:
             print(f"  READ {i}/{REQUESTS_PER_TEST}...")
-        send_query("SELECT * FROM actor WHERE actor_id = 1 LIMIT 1;", strategy)
+        response = send_query(
+            "SELECT * FROM actor WHERE actor_id = 1 LIMIT 1;",
+            strategy
+        )
+        if i == 0 and isinstance(response, dict):
+            print(f"    → READ routed to: {response.get('target')}")
+
     read_time = time.time() - start
     print(f"Action : READ x{REQUESTS_PER_TEST} → {read_time:.2f}s")
 
@@ -64,14 +71,18 @@ def benchmark_strategy(strategy):
     for i in range(REQUESTS_PER_TEST):
         if i % 50 == 0:
             print(f" WRITE {i}/{REQUESTS_PER_TEST}...")
-        send_query(
-    f"INSERT INTO {BENCHMARK_TABLE}(val) VALUES (1);",
-    strategy
-)
+        response = send_query(
+            f"INSERT INTO {BENCHMARK_TABLE}(val) VALUES (1);",
+            strategy
+        )
+        if i == 0 and isinstance(response, dict):
+            print(f"    → WRITE routed to: {response.get('target')}")
+
     write_time = time.time() - start
     print(f"Action : WRITE x{REQUESTS_PER_TEST} → {write_time:.2f}s")
 
     return read_time, write_time
+
 
 
 if __name__ == "__main__":

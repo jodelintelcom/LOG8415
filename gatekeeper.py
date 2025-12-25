@@ -11,10 +11,14 @@ PROXY_ENDPOINT = os.getenv(
     "http://10.0.0.20:8001/query"
 )
 
-BLOCKED_SQL_PATTERNS = ["drop table", "truncate", "shutdown", "delete from", "alter table"]
+BLOCKED_SQL_PATTERNS = ["drop table", "truncate", "shutdown", "alter table"]
 
 def check_query(sql: str):
-    return not any(cmd in sql.lower() for cmd in BLOCKED_SQL_PATTERNS)
+    s = sql.lower()
+    if "delete from" in s and "cluster_benchmark" not in s:
+        return False
+    return not any(cmd in s for cmd in BLOCKED_SQL_PATTERNS)
+
 
 @app.post("/query")
 def secure_query(payload: dict, x_api_key: str = Header(None)):
@@ -26,10 +30,10 @@ def secure_query(payload: dict, x_api_key: str = Header(None)):
     strategy = payload.get("strategy", "direct")
 
     if not sql:
-        raise HTTPException(status_code=400, detail="Provide a SQL query...")
+        raise HTTPException(status_code=400, detail="You should provide a SQL query...")
 
     if not check_query(sql):
-        raise HTTPException(status_code=400, detail="The query is blocked by the gatekeeper...")
+        raise HTTPException(status_code=400, detail="Your query has been blocked by the gatekeeper...")
 
     try:
         response = requests.post(PROXY_ENDPOINT, json={
