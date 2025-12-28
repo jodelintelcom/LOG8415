@@ -4,7 +4,7 @@ import os
 
 GATEKEEPER = os.getenv(
     "GATEKEEPER_URL",
-    "http://3.214.217.223:8000/query"
+    "http://44.201.54.163:8000/query"
 )
 
 HEADERS = {"X-API-Key": "log8415e"}
@@ -19,36 +19,15 @@ def send_query(sql, strategy="direct"):
             GATEKEEPER,
             json=payload,
             headers=HEADERS,
+            timeout=5
         )
         return r.json()
     except Exception as e:
         return {"error": str(e)}
 
-def verify_tables():
-    result = send_query(
-        "SELECT COUNT(*) FROM information_schema.tables "
-        f"WHERE table_name = '{BENCHMARK_TABLE}'",
-        "direct"
-    )
-    try:
-        count = result["results"][0]["COUNT(*)"]
-        if count > 0:
-            print("Table exists already...")
-            return
-    except:
-        pass
-    send_query("""
-        CREATE TABLE cluster_benchmark (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            val INT
-        );
-    """, "direct")
-
-
 def clean_table():
     print("The table is being deleted...")
     send_query(f"DELETE FROM {BENCHMARK_TABLE};", "direct")
-
 
 def benchmark_strategy(strategy):
     print(f"\n strategy running now is: {strategy.upper()}")
@@ -61,8 +40,8 @@ def benchmark_strategy(strategy):
             "SELECT * FROM actor WHERE actor_id = 1 LIMIT 1;",
             strategy
         )
-        if i == 0 and isinstance(response, dict):
-            print(f"    → READ routed to: {response.get('target')}")
+        if i == 0 :
+            print("FULL RESPONSE:", response)
 
     read_time = time.time() - start
     print(f"Action : READ x{REQUESTS_PER_TEST} → {read_time:.2f}s")
@@ -75,8 +54,8 @@ def benchmark_strategy(strategy):
             f"INSERT INTO {BENCHMARK_TABLE}(val) VALUES (1);",
             strategy
         )
-        if i == 0 and isinstance(response, dict):
-            print(f"    → WRITE routed to: {response.get('target')}")
+        if i == 0 :
+            print("FULL RESPONSE:", response)
 
     write_time = time.time() - start
     print(f"Action : WRITE x{REQUESTS_PER_TEST} → {write_time:.2f}s")
@@ -84,14 +63,12 @@ def benchmark_strategy(strategy):
     return read_time, write_time
 
 
-
 if __name__ == "__main__":
-    verify_tables()
-    
+    clean_table()
     results = {}
     for strat in ["direct", "random", "custom"]:
         read_t, write_t = benchmark_strategy(strat)
         results[strat] = (read_t, write_t)
 
     for strat, (r, w) in results.items():
-        print(f"{strat.upper():7} → READ: {r:.2f}s | WRITE: {w:.2f}s")
+        print(f"{strat.upper():7} : READ: {r:.2f}s | WRITE: {w:.2f}s")

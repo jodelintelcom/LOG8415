@@ -1,11 +1,15 @@
-output "vpc_id" {
-  value = aws_vpc.main.id
+output "admin_sg_id" {
+  value = aws_security_group.admin_sg.id
 }
 
-output "subnet_id" {
-  value = aws_subnet.public.id
+output "mysql_sg_id" {
+  value = aws_security_group.mysql_sg.id
 }
 
-output "security_group_id" {
-  value = aws_security_group.ssh.id
+output "proxy_sg_id" {
+  value = aws_security_group.proxy_app_sg.id
+}
+
+output "subnet_ids" {
+  value = aws_subnet.public[*].id
 }

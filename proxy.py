@@ -1,22 +1,17 @@
 from fastapi import FastAPI, HTTPException
-import mysql.connector
 import random
 import subprocess
-import json
-import time
+import pymysql
 
 app = FastAPI()
 
 
-MANAGER = "10.0.0.11"
+MANAGER = "10.0.0.196"
 WORKERS = [
-    "10.0.0.12",
-    "10.0.0.13"
+    "10.0.0.204",
+    "10.0.0.98"
 ]
 
-DB_USER = "root"
-DB_PASS = ""
-DB_NAME = "sakila"
 
 def check_action(query: str):
     writes = [
@@ -47,34 +42,30 @@ def choose_best_worker():
     latencies.sort()
     return latencies[0][1]
 
+
 def run_sql_query(host: str, query: str):
-
-    conn = mysql.connector.connect(
-        host=host,
-        user=DB_USER,
-        password=DB_PASS,
-        database=DB_NAME
-    )
-
-    cursor = conn.cursor()
-
     try:
-        cursor.execute(query)
-
-        if cursor.with_rows:
-            result = cursor.fetchall()
-        else:
-            conn.commit()
-            result = {"rows_affected": cursor.rowcount}
-
-        return result
+        conn = pymysql.connect(
+            host=host,
+            user="labuser",
+            password="labpass",
+            database="sakila",
+            autocommit=True
+        )
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(query)
+                if query.lower().startswith("select"):
+                    return cursor.fetchall()
+                else:
+                    return {"rows_affected": cursor.rowcount}
+        finally:
+            conn.close()
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return {"error": str(e)}
 
-    finally:
-        cursor.close()
-        conn.close()
+
 
 @app.post("/query")
 def route_query(payload: dict):

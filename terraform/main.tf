@@ -3,24 +3,33 @@ module "network" {
 }
 
 module "clusterMySql" {
-  source                 = "./modules/cluster"
-  cluster_name           = "clusterMySql"
-  instances_count        = 3
-  instance_type          = "t2.micro"
-  ami_id                 = "ami-0360c520857e3138f"
-  key_name               = "lab1-8415"
-  subnet_id              = module.network.subnet_id
-  vpc_security_group_ids = [module.network.security_group_id]
+  source          = "./modules/cluster"
+  cluster_name    = "clusterMySql"
+  instances_count = 3
+  instance_type   = "t3.micro"
+  ami_id          = "ami-0360c520857e3138f"
+  key_name        = "lab1-8415"
+  subnet_id       = module.network.subnet_ids[0]
+  vpc_security_group_ids = [
+    module.network.admin_sg_id,
+    module.network.mysql_sg_id
+  ]
+
 }
 
 module "proxy" {
-  source                 = "./modules/ec2"
-  instance_name          = "proxy"
-  instance_type          = "t2.large"
-  ami_id                 = "ami-0360c520857e3138f"
-  key_name               = "lab1-8415"
-  subnet_id              = module.network.subnet_id
-  vpc_security_group_ids = [module.network.security_group_id]
+  source        = "./modules/ec2"
+  instance_name = "proxy"
+  instance_type = "t3.micro"
+  ami_id        = "ami-0360c520857e3138f"
+  key_name      = "lab1-8415"
+  subnet_id     = module.network.subnet_ids[0]
+
+  vpc_security_group_ids = [
+    module.network.mysql_sg_id,
+    module.network.proxy_sg_id
+  ]
+
 
   user_data = <<-EOF
 #!/bin/bash
@@ -45,13 +54,17 @@ EOF
 
 
 module "gatekeeper" {
-  source                 = "./modules/ec2"
-  instance_name          = "gatekeeper"
-  instance_type          = "t2.large"
-  ami_id                 = "ami-0360c520857e3138f"
-  key_name               = "lab1-8415"
-  subnet_id              = module.network.subnet_id
-  vpc_security_group_ids = [module.network.security_group_id]
+  source        = "./modules/ec2"
+  instance_name = "gatekeeper"
+  instance_type = "t3.micro"
+  ami_id        = "ami-0360c520857e3138f"
+  key_name      = "lab1-8415"
+  subnet_id     = module.network.subnet_ids[0]
+
+  vpc_security_group_ids = [
+    module.network.proxy_sg_id
+  ]
+
 
   user_data = <<-EOF
 #!/bin/bash

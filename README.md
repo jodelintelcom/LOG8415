@@ -1,9 +1,7 @@
-# LOG8415E - Lab01
+# LOG8415E - Project
 
 Students:
 - ALCINDOR Marc Jodel - 2000081
-- MEFTI Riad - 2083421
-- ROCH-NEIREY Martin - 2463311
 
 # How to run the benchmark
 

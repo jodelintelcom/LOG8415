@@ -1,15 +1,12 @@
 from fastapi import FastAPI, HTTPException, Header
 import requests
-import re
 import os
 app = FastAPI()
 
 API_KEY = "log8415e"
 
-PROXY_ENDPOINT = os.getenv(
-    "PROXY_ENDPOINT",
-    "http://10.0.0.20:8001/query"
-)
+PROXY_ENDPOINT = "http://3.237.62.64:8001/query"
+
 
 BLOCKED_SQL_PATTERNS = ["drop table", "truncate", "shutdown", "alter table"]
 
