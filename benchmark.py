@@ -62,7 +62,6 @@ def benchmark_strategy(strategy):
 
     return read_time, write_time
 
-
 if __name__ == "__main__":
     clean_table()
     results = {}

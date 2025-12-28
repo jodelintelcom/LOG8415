@@ -20,7 +20,7 @@ module "clusterMySql" {
 module "proxy" {
   source        = "./modules/ec2"
   instance_name = "proxy"
-  instance_type = "t3.micro"
+  instance_type = "t2.large"
   ami_id        = "ami-0360c520857e3138f"
   key_name      = "lab1-8415"
   subnet_id     = module.network.subnet_ids[0]
@@ -56,7 +56,7 @@ EOF
 module "gatekeeper" {
   source        = "./modules/ec2"
   instance_name = "gatekeeper"
-  instance_type = "t3.micro"
+  instance_type = "t2.large"
   ami_id        = "ami-0360c520857e3138f"
   key_name      = "lab1-8415"
   subnet_id     = module.network.subnet_ids[0]

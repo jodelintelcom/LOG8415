@@ -5,13 +5,11 @@ import pymysql
 
 app = FastAPI()
 
-
 MANAGER = "10.0.0.196"
 WORKERS = [
     "10.0.0.204",
     "10.0.0.98"
 ]
-
 
 def check_action(query: str):
     writes = [
@@ -64,7 +62,6 @@ def run_sql_query(host: str, query: str):
 
     except Exception as e:
         return {"error": str(e)}
-
 
 
 @app.post("/query")

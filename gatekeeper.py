@@ -16,7 +16,6 @@ def check_query(sql: str):
         return False
     return not any(cmd in s for cmd in BLOCKED_SQL_PATTERNS)
 
-
 @app.post("/query")
 def secure_query(payload: dict, x_api_key: str = Header(None)):
 

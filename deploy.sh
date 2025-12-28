@@ -30,7 +30,6 @@ echo "Gatekeeper IP = $GATEKEEPER_IP"
 echo "Manager SSH   = $MANAGER_SSH_IP"
 echo "Workers SSH   = $WORKER1_SSH_IP , $WORKER2_SSH_IP"
 
-
 # Useful functions
 
 wait_for_ssh() {
